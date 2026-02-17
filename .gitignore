@@ -9,3 +9,7 @@ pgen_cli.egg-info/
 
 # Virtual environments
 .venv
+
+# data
+*.sqlite
+*.db
