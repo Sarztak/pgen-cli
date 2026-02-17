@@ -1,10 +1,9 @@
 import bcrypt
 import sys
+import sqlite3
 
-passwords = dict(
-    hash="",
-    password={}
-)
+conn = sqlite3.connect("./passwords.db")
+cursor = conn.cursor()
 
 def hash_password(password: str) -> bytes:
     password_bytes = password.encode('utf-8')
@@ -17,12 +16,18 @@ def verify_password(plain_password: str, hashed_password: bytes) -> bool:
 def create_new_master_password():
     password = input("Enter a master password: ")
     hashed_password = hash_password(password) 
-    passwords['hash'] = hashed_password
+    cursor.execute(
+        "insert or replace into master (id, hash) values (?, ?)",
+        (1, hashed_password)
+    )
+    conn.commit() # without this changes won't be saved
     show_menu()
 
 def check_old_master_password():
     password = input("Enter master password: ")
-    is_correct = verify_password(password, passwords.get('hash'))
+    cursor.execute("select hash from master where id = 1")
+    master_password = cursor.fetchone()[0] # (hash, 0) hash is a byte
+    is_correct = verify_password(password, master_password)
     if is_correct:
         show_menu()
     else:
@@ -43,24 +48,35 @@ def show_menu():
         case '1': view_passwords()
         case '2': manage_new_password()
         case '3': check_old_master_password()
-        case '4': sys.exit()
+        case '4': 
+            conn.close()
+            sys.exit()
         case _: 
             print("Please enter correct input")
             show_menu()
 
 def view_passwords():
-    for i, (name, password) in enumerate(passwords['password'].items()):
+    cursor.execute("select name, password from passwords")
+    rows = cursor.fetchall() # rows is a list of tuple corresponding to each row
+    for i, (name, password) in enumerate(rows):
         print(f"{i + 1}. {name} => {password}")
-
     show_menu()
 
 def manage_new_password():
     name = input("Enter name for new password: ")
     password = input("Enter the password to be saved: ")
-    passwords.get('password')[name] = password
+    cursor.execute(
+        "insert or replace into passwords (name, password) values (?, ?)",
+        (name, password)
+    )
+    conn.commit() # without this changes won't be saved
     show_menu()
 
-if not passwords['hash']:
+
+cursor.execute("select hash from master where id = 1")
+master_password = cursor.fetchone()
+
+if not master_password:
     create_new_master_password()
 else:
     check_old_master_password()
