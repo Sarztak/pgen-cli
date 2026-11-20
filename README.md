@@ -4,12 +4,12 @@ This is a simple password generator command line tool written in python. It opti
 
 ## Installation
 ```bash
-pipx install git+https://github.com/yourusername/pgen-cli.git
+pipx install git+https://github.com/Sarztak/pgen-cli.git
 ```
 
 Or with pip:
 ```bash
-pip install git+https://github.com/yourusername/pgen-cli.git
+pip install git+https://github.com/Sarztak/pgen-cli.git
 ```
 
 ## Examples
